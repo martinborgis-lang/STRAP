@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { parallaxElement } from '@/lib/animations'
 import { useAutoplayVideo } from '@/hooks/useAutoplayVideo'
 
 export function VideoImmersive() {
   const textRef = useRef<HTMLDivElement>(null)
   const videoRef = useAutoplayVideo()
+  const router = useRouter()
 
   useEffect(() => {
     if (typeof window === 'undefined' || !textRef.current) return
@@ -52,6 +54,15 @@ export function VideoImmersive() {
           Fait pour durer.
         </h2>
       </div>
+
+      {/* CTA glassmorphism */}
+      <button
+        type="button"
+        onClick={() => router.push('/collection')}
+        className="absolute bottom-12 left-1/2 z-10 inline-flex min-h-[44px] -translate-x-1/2 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] px-8 py-[14px] font-sans text-sm font-medium tracking-[0.05em] text-white backdrop-blur-[12px] transition-all duration-200 hover:bg-white/[0.15]"
+      >
+        Découvrir la collection →
+      </button>
     </section>
   )
 }

@@ -107,7 +107,11 @@ export default function CheckoutPage() {
                 stripe={stripePromise}
                 options={{ clientSecret, appearance: stripeAppearance }}
               >
-                <PaymentForm amount={amount} email={customer.email} />
+                <PaymentForm
+                  amount={amount}
+                  email={customer.email}
+                  clientSecret={clientSecret}
+                />
               </Elements>
             </>
           ) : (

@@ -51,6 +51,11 @@ export const metadata: Metadata = {
     description: 'Bracelets adaptables premium pour Royal Pop & Bioceramic.',
   },
   robots: { index: true, follow: true },
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 export const viewport: Viewport = {

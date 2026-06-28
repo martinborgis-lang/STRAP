@@ -2,7 +2,6 @@
 
 import { Star } from 'lucide-react'
 import { ScrollReveal } from '@/components/ui/ScrollReveal'
-import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder'
 
 const REVIEWS = [
   {
@@ -97,15 +96,6 @@ export function SocialProof() {
             </div>
           </ScrollReveal>
         ))}
-
-        {/* Slot UGC vidéo */}
-        <ScrollReveal delay={160} threshold={0.1} className="min-h-[220px]">
-          <VideoPlaceholder
-            label="UGC — Avis client"
-            aspectRatio="1/1"
-            className="h-full"
-          />
-        </ScrollReveal>
       </div>
     </section>
   )

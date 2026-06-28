@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   PaymentElement,
+  PaymentRequestButtonElement,
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
+import type { PaymentRequest } from '@stripe/stripe-js'
 import { AlertCircle, ArrowRight } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 
@@ -186,14 +188,98 @@ export function ShippingForm({
 export function PaymentForm({
   amount,
   email,
+  clientSecret,
 }: {
   amount: number
   email: string
+  clientSecret: string
 }) {
   const stripe = useStripe()
   const elements = useElements()
   const [error, setError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(
+    null,
+  )
+
+  // Apple Pay / Google Pay via le Payment Request Button.
+  useEffect(() => {
+    if (!stripe) return
+
+    const pr = stripe.paymentRequest({
+      country: 'FR',
+      currency: 'eur',
+      total: { label: 'STRAP', amount },
+      requestPayerName: true,
+      requestPayerEmail: true,
+      requestShipping: true,
+      shippingOptions: [
+        {
+          id: 'standard',
+          label: 'Livraison standard 48h',
+          detail: 'Livraison en France et Europe',
+          amount: 590,
+        },
+      ],
+    })
+
+    // N'affiche le bouton que si un wallet est disponible
+    // (Safari → Apple Pay, Chrome Android → Google Pay).
+    pr.canMakePayment().then((result) => {
+      if (result) setPaymentRequest(pr)
+    })
+
+    // L'adresse change : on confirme le total et l'option de livraison.
+    pr.on('shippingaddresschange', (ev) => {
+      ev.updateWith({
+        status: 'success',
+        total: { label: 'STRAP', amount },
+        shippingOptions: [
+          {
+            id: 'standard',
+            label: 'Livraison standard 48h',
+            detail: 'Livraison en France et Europe',
+            amount: 590,
+          },
+        ],
+      })
+    })
+
+    // Confirmation du paiement issu du wallet.
+    pr.on('paymentmethod', async (ev) => {
+      const { error: confirmError, paymentIntent } =
+        await stripe.confirmCardPayment(
+          clientSecret,
+          { payment_method: ev.paymentMethod.id },
+          { handleActions: false },
+        )
+
+      if (confirmError) {
+        ev.complete('fail')
+        setError(confirmError.message ?? 'Le paiement a échoué.')
+        return
+      }
+
+      ev.complete('success')
+
+      // 3-D Secure éventuel après fermeture de la feuille wallet.
+      if (paymentIntent?.status === 'requires_action') {
+        const { error: actionError } =
+          await stripe.confirmCardPayment(clientSecret)
+        if (actionError) {
+          setError(actionError.message ?? 'Authentification échouée.')
+          return
+        }
+      }
+
+      window.location.href = `${window.location.origin}/confirmation?redirect_status=succeeded&payment_intent=${paymentIntent?.id ?? ''}`
+    })
+
+    return () => {
+      pr.off('paymentmethod')
+      pr.off('shippingaddresschange')
+    }
+  }, [stripe, amount, clientSecret])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -219,6 +305,32 @@ export function PaymentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <h2 className="font-sans text-xl font-semibold text-fg">Paiement</h2>
+
+      {/* Apple Pay / Google Pay — affiché uniquement si supporté */}
+      {paymentRequest && (
+        <div className="space-y-6">
+          <PaymentRequestButtonElement
+            options={{
+              paymentRequest,
+              style: {
+                paymentRequestButton: {
+                  type: 'buy',
+                  theme: 'dark',
+                  height: '52px',
+                },
+              },
+            }}
+          />
+          <div className="flex items-center gap-4">
+            <span className="h-px flex-1 bg-border" />
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-fg-secondary">
+              ou payer par carte
+            </span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+        </div>
+      )}
+
       <PaymentElement />
 
       {error && (

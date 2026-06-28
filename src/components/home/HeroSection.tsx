@@ -66,7 +66,7 @@ export function HeroSection() {
           transition={{ delay: 0.2, duration: 0.8 }}
           className="mb-6 font-mono text-xs uppercase tracking-[0.2em] text-fg-secondary"
         >
-          — Nouvelle Collection 2024
+          — Nouvelle Collection 2026
         </motion.p>
 
         <h1
