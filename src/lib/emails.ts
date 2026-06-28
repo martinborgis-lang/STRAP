@@ -38,7 +38,7 @@ export async function sendOrderConfirmation(order: {
     .join('')
 
   await getResend().emails.send({
-    from: 'STRAP <commandes@strap.store>',
+    from: 'STRAP <onboarding@resend.dev>',
     to: order.customerEmail,
     subject: `Confirmation de commande #${order.orderId
       .slice(0, 8)
