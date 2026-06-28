@@ -201,6 +201,7 @@ export function PaymentForm({
   const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(
     null,
   )
+  const [canMakePayment, setCanMakePayment] = useState<boolean | null>(null)
 
   // Apple Pay / Google Pay via le Payment Request Button.
   useEffect(() => {
@@ -226,6 +227,10 @@ export function PaymentForm({
     // N'affiche le bouton que si un wallet est disponible
     // (Safari → Apple Pay, Chrome Android → Google Pay).
     pr.canMakePayment().then((result) => {
+      console.log('Payment Request result:', result)
+      console.log('User agent:', navigator.userAgent)
+      console.log('Protocol:', window.location.protocol)
+      setCanMakePayment(Boolean(result))
       if (result) setPaymentRequest(pr)
     })
 
@@ -305,6 +310,11 @@ export function PaymentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <h2 className="font-sans text-xl font-semibold text-fg">Paiement</h2>
+
+      {/* DEBUG temporaire — Apple Pay */}
+      <p style={{ color: 'white', fontSize: 12 }}>
+        Apple Pay disponible: {canMakePayment ? 'OUI' : 'NON'}
+      </p>
 
       {/* Apple Pay / Google Pay — affiché uniquement si supporté */}
       {paymentRequest && (
