@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ArrowLink } from '@/components/ui/Button'
+import { useAutoplayVideo } from '@/hooks/useAutoplayVideo'
 
 const LINES = [
   { text: 'Wear.', className: 'text-fg' },
@@ -13,6 +14,7 @@ const LINES = [
 
 export function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null)
+  const videoRef = useAutoplayVideo()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -36,6 +38,7 @@ export function HeroSection() {
     >
       {/* Vidéo de fond */}
       <video
+        ref={videoRef}
         autoPlay
         muted
         loop

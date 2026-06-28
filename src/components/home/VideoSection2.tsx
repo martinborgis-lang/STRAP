@@ -1,8 +1,15 @@
+'use client'
+
+import { useAutoplayVideo } from '@/hooks/useAutoplayVideo'
+
 export function VideoSection2() {
+  const videoRef = useAutoplayVideo()
+
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-bg">
       {/* Vidéo de fond */}
       <video
+        ref={videoRef}
         autoPlay
         muted
         loop

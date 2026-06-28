@@ -1,9 +1,14 @@
+'use client'
+
 import Link from 'next/link'
 import { getAllProducts } from '@/lib/products'
+import { useAutoplayVideo } from '@/hooks/useAutoplayVideo'
 
 const products = getAllProducts()
 
 export function CompatibilityGuide() {
+  const videoRef = useAutoplayVideo()
+
   return (
     <section
       id="guide"
@@ -11,6 +16,7 @@ export function CompatibilityGuide() {
     >
       {/* Vidéo de fond */}
       <video
+        ref={videoRef}
         autoPlay
         muted
         loop

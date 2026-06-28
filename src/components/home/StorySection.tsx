@@ -2,6 +2,7 @@
 
 import { ScrollReveal } from '@/components/ui/ScrollReveal'
 import { GoldDivider } from '@/components/ui/GoldDivider'
+import { useAutoplayVideo } from '@/hooks/useAutoplayVideo'
 
 const TIMELINE = [
   {
@@ -27,6 +28,8 @@ const TIMELINE = [
 ]
 
 export function StorySection() {
+  const videoRef = useAutoplayVideo()
+
   return (
     <section id="histoire" className="container-luxe py-24 md:py-32">
       <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
@@ -34,6 +37,7 @@ export function StorySection() {
         <ScrollReveal animation="fade-up" className="lg:sticky lg:top-28 lg:h-fit">
           <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-bg-surface">
             <video
+              ref={videoRef}
               autoPlay
               muted
               loop

@@ -2,9 +2,11 @@
 
 import { useEffect, useRef } from 'react'
 import { parallaxElement } from '@/lib/animations'
+import { useAutoplayVideo } from '@/hooks/useAutoplayVideo'
 
 export function VideoImmersive() {
   const textRef = useRef<HTMLDivElement>(null)
+  const videoRef = useAutoplayVideo()
 
   useEffect(() => {
     if (typeof window === 'undefined' || !textRef.current) return
@@ -14,6 +16,7 @@ export function VideoImmersive() {
   return (
     <section className="relative h-screen overflow-hidden">
       <video
+        ref={videoRef}
         autoPlay
         muted
         loop
