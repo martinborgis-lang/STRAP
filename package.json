@@ -12,6 +12,7 @@
   "dependencies": {
     "@stripe/react-stripe-js": "^2.9.0",
     "@stripe/stripe-js": "^4.10.0",
+    "@supabase/supabase-js": "^2.108.2",
     "clsx": "^2.1.1",
     "framer-motion": "^11.15.0",
     "gsap": "^3.12.5",
@@ -19,6 +20,7 @@
     "next": "^14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "resend": "^6.16.0",
     "stripe": "^17.5.0",
     "tailwind-merge": "^2.6.0",
     "zustand": "^4.5.5"

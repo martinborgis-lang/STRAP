@@ -3,17 +3,195 @@
 import { useState } from 'react'
 import {
   PaymentElement,
-  AddressElement,
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, ArrowRight } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 
-export function CheckoutForm({ amount }: { amount: number }) {
+export interface CustomerInfo {
+  name: string
+  email: string
+  line1: string
+  line2: string
+  city: string
+  postalCode: string
+  country: string
+}
+
+export const EMPTY_CUSTOMER: CustomerInfo = {
+  name: '',
+  email: '',
+  line1: '',
+  line2: '',
+  city: '',
+  postalCode: '',
+  country: 'FR',
+}
+
+const COUNTRIES = [
+  ['FR', 'France'],
+  ['BE', 'Belgique'],
+  ['CH', 'Suisse'],
+  ['LU', 'Luxembourg'],
+  ['DE', 'Allemagne'],
+  ['ES', 'Espagne'],
+  ['IT', 'Italie'],
+  ['NL', 'Pays-Bas'],
+  ['GB', 'Royaume-Uni'],
+] as const
+
+const inputClass =
+  'w-full rounded-lg border border-border bg-bg-surface px-4 py-3 text-sm text-fg outline-none transition-colors placeholder:text-fg-muted focus:border-accent'
+
+/* ─────────────────────────  Étape 1 : Coordonnées + Livraison  ──────────────────────── */
+
+export function ShippingForm({
+  value,
+  onChange,
+  onSubmit,
+  submitting,
+  error,
+}: {
+  value: CustomerInfo
+  onChange: (next: CustomerInfo) => void
+  onSubmit: () => void
+  submitting: boolean
+  error: string | null
+}) {
+  const set = (key: keyof CustomerInfo) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => onChange({ ...value, [key]: e.target.value })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSubmit()
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div>
+        <h2 className="mb-4 font-sans text-xl font-semibold text-fg">
+          Coordonnées
+        </h2>
+        <div className="space-y-3">
+          <input
+            type="text"
+            required
+            value={value.name}
+            onChange={set('name')}
+            placeholder="Nom complet"
+            aria-label="Nom complet"
+            className={inputClass}
+          />
+          <input
+            type="email"
+            required
+            value={value.email}
+            onChange={set('email')}
+            placeholder="Adresse e-mail"
+            aria-label="Adresse e-mail"
+            className={inputClass}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="mb-4 font-sans text-xl font-semibold text-fg">
+          Livraison
+        </h2>
+        <div className="space-y-3">
+          <input
+            type="text"
+            required
+            value={value.line1}
+            onChange={set('line1')}
+            placeholder="Adresse"
+            aria-label="Adresse"
+            className={inputClass}
+          />
+          <input
+            type="text"
+            value={value.line2}
+            onChange={set('line2')}
+            placeholder="Complément d'adresse (optionnel)"
+            aria-label="Complément d'adresse"
+            className={inputClass}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              type="text"
+              required
+              value={value.postalCode}
+              onChange={set('postalCode')}
+              placeholder="Code postal"
+              aria-label="Code postal"
+              className={inputClass}
+            />
+            <input
+              type="text"
+              required
+              value={value.city}
+              onChange={set('city')}
+              placeholder="Ville"
+              aria-label="Ville"
+              className={inputClass}
+            />
+          </div>
+          <select
+            value={value.country}
+            onChange={set('country')}
+            aria-label="Pays"
+            className={inputClass}
+          >
+            {COUNTRIES.map(([code, label]) => (
+              <option key={code} value={code}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {error && (
+        <div className="flex items-start gap-2 rounded-md border border-border bg-bg-surface px-4 py-3 text-sm text-fg">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={submitting}
+        className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-lg bg-white py-4 text-[13px] font-semibold text-black transition-all hover:bg-accent-hover active:scale-[0.98] disabled:opacity-60"
+      >
+        {submitting ? (
+          <>
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+            Préparation…
+          </>
+        ) : (
+          <>
+            Continuer vers le paiement
+            <ArrowRight className="h-4 w-4" />
+          </>
+        )}
+      </button>
+    </form>
+  )
+}
+
+/* ─────────────────────────  Étape 2 : Paiement  ──────────────────────── */
+
+export function PaymentForm({
+  amount,
+  email,
+}: {
+  amount: number
+  email: string
+}) {
   const stripe = useStripe()
   const elements = useElements()
-  const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
 
@@ -32,7 +210,6 @@ export function CheckoutForm({ amount }: { amount: number }) {
       },
     })
 
-    // Si on arrive ici, c'est qu'il y a eu une erreur (sinon redirection)
     if (submitError) {
       setError(submitError.message ?? 'Une erreur est survenue.')
       setProcessing(false)
@@ -40,35 +217,12 @@ export function CheckoutForm({ amount }: { amount: number }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Coordonnées */}
-      <div>
-        <h2 className="mb-4 font-serif text-xl font-medium">Coordonnées</h2>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Adresse e-mail"
-          aria-label="Adresse e-mail"
-          className="w-full rounded-lg border border-border bg-bg-surface px-4 py-3 text-sm text-fg outline-none transition-colors placeholder:text-fg-muted focus:border-accent"
-        />
-      </div>
-
-      {/* Livraison */}
-      <div>
-        <h2 className="mb-4 font-serif text-xl font-medium">Livraison</h2>
-        <AddressElement options={{ mode: 'shipping' }} />
-      </div>
-
-      {/* Paiement */}
-      <div>
-        <h2 className="mb-4 font-serif text-xl font-medium">Paiement</h2>
-        <PaymentElement />
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="font-sans text-xl font-semibold text-fg">Paiement</h2>
+      <PaymentElement />
 
       {error && (
-        <div className="flex items-start gap-2 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="flex items-start gap-2 rounded-md border border-border bg-bg-surface px-4 py-3 text-sm text-fg">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{error}</span>
         </div>
