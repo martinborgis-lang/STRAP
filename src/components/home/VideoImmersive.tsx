@@ -52,16 +52,6 @@ export function VideoImmersive() {
           Fait pour durer.
         </h2>
       </div>
-
-      {/* Badge flottant */}
-      <div
-        className="absolute bottom-1/3 right-6 z-10 md:right-16"
-        style={{ animation: 'float 3s ease-in-out infinite' }}
-      >
-        <span className="inline-flex items-center rounded-full border border-border-strong bg-white/10 px-5 py-3 font-mono text-xs uppercase tracking-[0.1em] text-fg backdrop-blur-sm">
-          Compatible Royal Pop
-        </span>
-      </div>
     </section>
   )
 }
